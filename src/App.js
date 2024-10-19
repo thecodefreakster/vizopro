@@ -33,7 +33,7 @@ export default function App() {
     setSelectedFile(event.target.files[0])
   }
 
-  const handleUpload = async () => {
+  const handleUpload = async (event) => {
     const file = event.target.files?.[0];
     const url = await GetSignedUrl(file.name);
 
