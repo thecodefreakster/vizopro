@@ -21,7 +21,7 @@ export default function App() {
 
   const fetchVideos = async () => {
     try {
-      const response = await axios.get(`${API_URL}/videos`)
+      const response = await axios.get(`${API_URL}`)
       setVideos(response.data)
     } catch (error) {
       console.error('Error fetching videos:', error)
