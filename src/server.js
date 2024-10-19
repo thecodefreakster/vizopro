@@ -80,7 +80,7 @@ const app = express();
 const port = process.env.PORT || 3001;
 
 app.use(cors({
-  origin: 'https://veezo.pro',
+  origin: 'https://veezo.pro/',
   method: ["POST", "GET", "OPTIONS"],
   responseHeader: ["Content-Type"],
   maxAgeSeconds: 3600
