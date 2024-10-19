@@ -32,33 +32,57 @@ export default function App() {
     setSelectedFile(event.target.files[0])
   }
 
-  const handleUpload = async () => {
-    if (!selectedFile) {
-      alert('Please select a file first')
-      return
-    }
+  const handleUpload = async (event) => {
+    event.preventDefault();
 
-    const formData = new FormData()
-    formData.append('video', selectedFile)
+    const file = event.target.files?.[0];
+    if (file) {
+      try {
+        setUploading(true);
 
-    try {
-      await axios.post(`${API_URL}`, formData, {
-        onUploadProgress: (progressEvent) => {
-          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total)
-          setUploadProgress(percentCompleted)
+        // Step 1: Get a signed URL for uploading the video file
+        const url = await GetSignedUrl(file.name);
+
+        // Step 2: Upload the file to Google Cloud Storage using the signed URL
+        const response = await fetch(url, {
+          method: 'PUT',
+          body: file,
+        });
+
+        if (!response.ok) {
+          throw new Error('File upload failed');
         }
-      })
-      setUploadProgress(0)
-      setSelectedFile(null)
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ''
+
+        // Step 3: Generate a unique ID for the video
+        const id = generateId();
+
+        // Step 4: Create the new URL with the generated ID
+        const newUrl = `/vid=${id}`;
+
+        // Step 5: Store the video link (this should save the relation between id and file.name)
+        await storeVideoLink(id, file.name);
+
+        // Step 6: Update the browser URL
+        router.push(newUrl);
+
+        // Step 7: Get the public URL for the uploaded file
+        const publicUrl = getPublicUrl(file.name);
+
+        // Step 8: Set the video URL for playback
+        setVideoUrl(publicUrl);
+
+        console.log('Generated ID:', id, 'Public URL:', publicUrl); // Debugging output
+
+        setUploadProgress(100);
+      } catch (error) {
+        console.error('Upload error:', error);
+        setError('Upload error');
+      } finally {
+        setUploading(false);
+        setFinalizing(false);
       }
-      fetchVideos()
-    } catch (error) {
-      console.error('Error uploading video:', error)
-      setUploadProgress(0)
     }
-  }
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
