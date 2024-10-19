@@ -87,10 +87,10 @@ app.use(cors({
 const storage = new Storage({
   keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS || 
     path.join(__dirname, '../../veezopro-gcsk.json'),
-  projectId: process.env.GC_PROJECT_ID || 'your-project-id',
+  projectId: process.env.GC_PROJECT_ID || 'veezopro',
 });
 
-const bucket = storage.bucket(process.env.GC_BUCKET_NAME || 'your-bucket-name');
+const bucket = storage.bucket(process.env.GC_BUCKET_NAME || 'veezopro_videos');
 
 // Configure multer for handling file uploads
 const upload = multer({
