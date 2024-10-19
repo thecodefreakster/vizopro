@@ -80,7 +80,10 @@ const app = express();
 const port = process.env.PORT || 3001;
 
 app.use(cors({
-  origin: process.env.CLIENT_URL || '*', // Limit CORS for production
+  origin: '*',
+  method: ["POST", "GET", "OPTIONS"],
+  responseHeader: ["Content-Type"],
+  maxAgeSeconds: 3600
 }));
 
 // Configure Google Cloud Storage with environment variabless
