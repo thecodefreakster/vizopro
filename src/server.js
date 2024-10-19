@@ -110,37 +110,50 @@ app.get('/', (req, res) => {
 });
 
 // Upload video route
-app.post('/api/upload', upload.single('video'), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).send('No file uploaded.');
+app.post('/upload', (req, res) => {
+  const form = new formidable.IncomingForm();
+  form.parse(req, (err, fields, files) => {
+    if (err) {
+      res.status(500).json({ error: 'File parsing error' });
+      return;
     }
 
-    const blob = bucket.file(req.file.originalname);
+    const file = files.file[0]; // Accessing the file from the parsed data
+    const blob = bucket.file(file.originalFilename); // Use the original file name
     const blobStream = blob.createWriteStream({
-      resumable: false, // Consider resumable uploads for large files
+      resumable: false,
+      contentType: file.mimetype, // Set the correct content type
     });
 
+    // Handle any errors during the upload
     blobStream.on('error', (err) => {
-      console.error('Upload errori:', err);
-      return res.status(500).send('Error uploading file');
+      res.status(500).json({ error: err.message });
     });
 
-    blobStream.on('finish', () => {
-      const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
-      videos.push({
-        id: videos.length + 1,
-        filename: req.file.originalname,
-        url: publicUrl,
-      });
-      res.status(200).json({ message: 'File uploaded successfully', url: publicUrl });
+    // After the file is fully uploaded
+    blobStream.on('finish', async () => {
+      try {
+        // Make the file public
+        await blob.makePublic();
+
+        // Generate the public URL
+        const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+
+        // Store the video link with the generated ID (you need to generate an ID for this)
+        const id = generateId(); // You may use a custom function to generate an ID
+        storeVideoLink(id, file.originalFilename); // Store the video link with the generated ID
+
+        // Return the public URL in the response
+        res.status(200).json({ url: publicUrl });
+      } catch (error) {
+        console.error('Error making the file public:', error);
+        res.status(500).json({ error: 'Failed to make file public' });
+      }
     });
 
-    blobStream.end(req.file.buffer);
-  } catch (err) {
-    console.error('Unexpected error:', err);
-    res.status(500).send('Internal server error');
-  }
+    // Start uploading the file
+    fs.createReadStream(file.filepath).pipe(blobStream);
+  });
 });
 
 // Get list of uploaded videos
