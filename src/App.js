@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './components/ui/avatar.tsx'
 import { Upload, Play, Heart, Share2, MessageCircle, Search } from 'lucide-react'
 import axios from 'axios'
 
-const API_URL = 'http://localhost:3001/api';
+const API_URL = 'http://veezo.pro';
 
 export default function App() {
   const [uploadProgress, setUploadProgress] = useState(0)
