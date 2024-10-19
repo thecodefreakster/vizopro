@@ -42,7 +42,7 @@ export default function App() {
     formData.append('video', selectedFile)
 
     try {
-      await axios.post(`${API_URL}/upload`, formData, {
+      await axios.post(`${API_URL}`, formData, {
         onUploadProgress: (progressEvent) => {
           const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total)
           setUploadProgress(percentCompleted)
